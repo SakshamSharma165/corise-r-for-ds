@@ -338,11 +338,11 @@ Now, you will visualize the distribution of `pct_births` by `last_letter` and `f
 ```{r question-4-visualize}
 tbl_names_by_first_and_last_letter |> 
   # Filter for the year 2021
-  
+  filter(year == 2021) |>
   # Initialize a ggplot of last_letter vs. first_letter
-  
+  ggplot(aes(x = last_letter, y = first_letter)) +
   # Add a `geom_tile` layer with fill mapped to pct_births
-  
+  geom_tile(aes(fill = pct_births)) +
   # Add labels (title, subtitle, x, y, fill)
  
   
