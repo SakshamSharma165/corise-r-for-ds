@@ -39,6 +39,21 @@ tbl_names <- readr::read_csv(
 print(tbl_names)
 ```
 
+    #> # A tibble: 2,052,781 × 4
+    #>     year name      sex   nb_births
+    #>    <dbl> <chr>     <chr>     <dbl>
+    #>  1  1880 Mary      F          7065
+    #>  2  1880 Anna      F          2604
+    #>  3  1880 Emma      F          2003
+    #>  4  1880 Elizabeth F          1939
+    #>  5  1880 Minnie    F          1746
+    #>  6  1880 Margaret  F          1578
+    #>  7  1880 Ida       F          1472
+    #>  8  1880 Alice     F          1414
+    #>  9  1880 Bertha    F          1320
+    #> 10  1880 Sarah     F          1288
+    #> # ℹ 2,052,771 more rows
+
 ### Question 1: \[Popular Names\] What are the most popular names?
 
 One of the first things we want to do is to understand naming trends.
@@ -72,6 +87,21 @@ tbl_names_popular = tbl_names |>
 
 tbl_names_popular
 ```
+
+    #> # A tibble: 10 × 3
+    #> # Groups:   sex [2]
+    #>    sex   name      nb_births
+    #>    <chr> <chr>         <dbl>
+    #>  1 F     Zyva             38
+    #>  2 F     Zyriyah          10
+    #>  3 F     Zyrihanna        16
+    #>  4 F     Zyrielle         32
+    #>  5 F     Zyriel           11
+    #>  6 M     Zzyzx             5
+    #>  7 M     Zyyon             6
+    #>  8 M     Zyvon             7
+    #>  9 M     Zyus             11
+    #> 10 M     Zytavion          5
 
 #### Visualize
 
@@ -113,6 +143,8 @@ tbl_names_popular |>
   )
 ```
 
+<img src="img/question-1-visualize-1.png" width="100%" style="display: block; margin: auto;" />
+
 ### Question 2: \[Trendy Names\] What are trendy names?
 
 Consider the following two names `Elizabeth` and `Deneen`. `Elizabeth`
@@ -148,24 +180,39 @@ transformation.
 ``` r
 tbl_names_popular_trendy = tbl_names |> 
   # Group by sex and name
-  ___(___, ___) |> 
+  group_by(sex, name) |> 
   # Summarize total number of births and max births in a year
   summarize(
-    nb_births_total = ___(___),
-    nb_births_max = ___(___),
+    nb_births_total = sum(nb_births),
+    nb_births_max = max(nb_births),
     .groups = "drop"
   ) |> 
   # Filter for names with at least 10000 births
-  ___(___ > ___) |> 
+  filter(nb_births_total > 10000) |> 
   # Add a column for trendiness computed as ratio of max to total
-  ___(___ = ___ / ___) |> 
+  mutate(trendiness = nb_births_max / nb_births_total) |> 
   # Group by sex
-  ___(___) |> 
+  group_by(sex) |> 
   # Slice top 5 rows by trendiness for each group
-  ___(___, n = ___)
+  slice_max(trendiness, n = 5)
 
 tbl_names_popular_trendy
 ```
+
+    #> # A tibble: 10 × 5
+    #> # Groups:   sex [2]
+    #>    sex   name      nb_births_total nb_births_max trendiness
+    #>    <chr> <chr>               <dbl>         <dbl>      <dbl>
+    #>  1 F     Katina              11284          2745      0.243
+    #>  2 F     Ashanti             12141          2945      0.243
+    #>  3 F     Marquita            11010          2543      0.231
+    #>  4 F     Everleigh           12738          2814      0.221
+    #>  5 F     Miley               12865          2649      0.206
+    #>  6 M     Luka                14393          3197      0.222
+    #>  7 M     Atlas               11869          2523      0.213
+    #>  8 M     Jase                22062          4552      0.206
+    #>  9 M     Legend              16153          3152      0.195
+    #> 10 M     Jayceon             11606          2013      0.173
 
 |                                                                                                                                                                                                                                                                                                                                       |
 |---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -182,23 +229,30 @@ function to plot the trends for different names.
 plot_trends_in_name <- function(my_name) {
   tbl_names |> 
     # Filter for name = my_name
-    ___(___ == my_name) |> 
+    filter(name == my_name) |> 
     # Initialize a ggplot of `nb_births` vs. `year` colored by `sex`
-    ___(___(x = ___, y = ___, color = ___)) +
+    ggplot(aes(x = year, y = nb_births, color = sex)) +
     # Add a line layer
-    ___() +
+    geom_line() +
     # Add labels (title, x, y)
     labs(
       title = glue::glue("Babies named {my_name} across the years!"),
-      x = '___',
-      y = '___'
+      x = 'Year',
+      y = 'Births'
     ) +
     # Update plot theme
     theme(plot.title.position = "plot")
 }
 plot_trends_in_name("Steve")
+```
+
+<img src="img/question-2-visualize-1.png" width="100%" style="display: block; margin: auto;" />
+
+``` r
 plot_trends_in_name("Barbara")
 ```
+
+<img src="img/question-2-visualize-2.png" width="100%" style="display: block; margin: auto;" />
 
 ### Question 3: \[Exploring Letter Popularity\] What makes certain letters more popular in names?
 
@@ -226,12 +280,27 @@ tbl_names = tbl_names |>
   # Add NEW column first_letter by extracting `first_letter` from name using `str_sub`
   mutate(first_letter = str_sub(name, 1, 1)) |>  
   # Add NEW column last_letter by extracting `last_letter` from name using `str_sub`
-  ___(last_letter = ___(name, -1, -1)) |> 
+  mutate(last_letter = str_sub(name, -1, -1)) |> 
   # UPDATE column `last_letter` to upper case using `str_to_upper`
-  ___(last_letter = ___(___))
+  mutate(last_letter = str_to_upper(last_letter))
 
 tbl_names
 ```
+
+    #> # A tibble: 2,052,781 × 6
+    #>     year name      sex   nb_births first_letter last_letter
+    #>    <dbl> <chr>     <chr>     <dbl> <chr>        <chr>      
+    #>  1  1880 Mary      F          7065 M            Y          
+    #>  2  1880 Anna      F          2604 A            A          
+    #>  3  1880 Emma      F          2003 E            A          
+    #>  4  1880 Elizabeth F          1939 E            H          
+    #>  5  1880 Minnie    F          1746 M            E          
+    #>  6  1880 Margaret  F          1578 M            T          
+    #>  7  1880 Ida       F          1472 I            A          
+    #>  8  1880 Alice     F          1414 A            E          
+    #>  9  1880 Bertha    F          1320 B            A          
+    #> 10  1880 Sarah     F          1288 S            H          
+    #> # ℹ 2,052,771 more rows
 
 Begin by computing the distribution of births across year and sex by
 first letter of a name.
@@ -239,16 +308,32 @@ first letter of a name.
 ``` r
 tbl_names_by_letter = tbl_names |> 
   # Group by year, sex and first_letter
-  ___(___, ___, ___) |> 
+  group_by(year, sex, first_letter) |> 
   # Summarize total number of births, drop the grouping
-  ___(___ = ___(___), .groups = "drop") |> 
+  summarise(nb_births = sum(nb_births), .groups = "drop") |> 
   # Group by year and sex
-  ___(___, ___) |> 
+  group_by(year, sex) |> 
   # Add NEW column pct_births by dividing nb_births by sum(nb_births)
-  mutate(pct_births = ___ / sum(___))
+  mutate(pct_births =  nb_births / sum(nb_births))
   
 tbl_names_by_letter
 ```
+
+    #> # A tibble: 7,313 × 5
+    #> # Groups:   year, sex [284]
+    #>     year sex   first_letter nb_births pct_births
+    #>    <dbl> <chr> <chr>            <dbl>      <dbl>
+    #>  1  1880 F     A                 9334     0.103 
+    #>  2  1880 F     B                 3876     0.0426
+    #>  3  1880 F     C                 5868     0.0645
+    #>  4  1880 F     D                 2218     0.0244
+    #>  5  1880 F     E                11444     0.126 
+    #>  6  1880 F     F                 2957     0.0325
+    #>  7  1880 F     G                 2463     0.0271
+    #>  8  1880 F     H                 2743     0.0301
+    #>  9  1880 F     I                 2480     0.0273
+    #> 10  1880 F     J                 3800     0.0418
+    #> # ℹ 7,303 more rows
 
 #### Visualize
 
@@ -256,23 +341,22 @@ Visualize the distribution of births by first letter for the year 2020,
 faceted by sex.
 
 ``` r
-tbl_names_by_letter |> 
+tbl_names_by_letter |>
   # Filter for the year 2020
-   
+   filter(year == 2020) |>
   # Initialize a ggplot of pct_births vs. first_letter
-  
+  ggplot(aes(x = first_letter, y = pct_births)) +
   # Add a column layer using `geom_col()`
-  
+  geom_col() +
   # Facet wrap plot by sex
-  
+  facet_wrap(~sex, scales = "free_y") +
   # Add labels (title, subtitle, x, y)
-  
-  
-
-
-
-
-  
+  labs(
+    title = "Distribution of Birth Names first letter",
+    subtitle = "For the year 2020",
+    x = "First Letter",
+    y = "Births (in percents)"
+  ) +
   # Fix scales of y axis
   scale_y_continuous(
     expand = c(0, 0),
@@ -283,8 +367,10 @@ tbl_names_by_letter |>
     plot.title.position = "plot",
     axis.ticks.x = element_blank(),
     panel.grid.major.x = element_blank()
-  )
+  ) 
 ```
+
+<img src="img/question-3-visualize-1-1.png" width="100%" style="display: block; margin: auto;" />
 
 Write a function that plot trends in the percentage of births for all
 names starting with a specific first letter.
@@ -295,16 +381,16 @@ plot_trends_in_letter <- function(my_letter) {
     # Filter for first_letter = my_letter
     filter(first_letter == my_letter) |> 
     # Initialize a ggplot of pct_births vs. year colored by sex
-    
+    ggplot(aes(x = year, y = pct_births, color = sex)) +
     # Add a line layer
-    
+    geom_line() +
     # Add labels (title, subtitle, caption, x, y)
     labs(
       title = glue::glue("Trends in Names beginning with {my_letter}"),
-      subtitle = "___",
-      caption = "___",
-      x = "___",
-      y = '___'
+      subtitle = "",
+      caption = "Source SSA",
+      x = "year",
+      y = glue::glue('Percentage share of names starting with {my_letter}')
     ) +
     # Update y-axis scales to display percentages
     scale_y_continuous(labels = scales::percent_format()) +
@@ -314,6 +400,8 @@ plot_trends_in_letter <- function(my_letter) {
 
 plot_trends_in_letter("S")
 ```
+
+<img src="img/question-3-visualize-2-1.png" width="100%" style="display: block; margin: auto;" />
 
 |                                                                                                                                                                                                                                                                                         |
 |-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -333,23 +421,35 @@ letter combinations and how they have evolved over the years.
 ``` r
 tbl_names_by_first_and_last_letter = tbl_names |> 
   # Filter for sex = "F"
-  
+  filter(sex == "F") |>
   # Group by `first_letter`, `last_letter`, and `year`
-  
+  group_by(first_letter, last_letter, year) |>
   # Summarize total number of births
-  
-  
-  
-  
+  summarise(nb_births = sum(nb_births), .groups = 'drop') |>
   # Group by `year`
-  
+  group_by(year) |>
   # Add NEW column pct_births by dividing nb_births by sum(nb_births)
-
+  mutate(pct_births = nb_births/sum(nb_births)) |>
   # Ungroup data
-
+  ungroup()
 
 tbl_names_by_first_and_last_letter
 ```
+
+    #> # A tibble: 43,579 × 5
+    #>    first_letter last_letter  year nb_births pct_births
+    #>    <chr>        <chr>       <dbl>     <dbl>      <dbl>
+    #>  1 A            A            1880      4784     0.0526
+    #>  2 A            A            1881      4966     0.0540
+    #>  3 A            A            1882      5728     0.0531
+    #>  4 A            A            1883      6051     0.0539
+    #>  5 A            A            1884      7038     0.0546
+    #>  6 A            A            1885      7203     0.0541
+    #>  7 A            A            1886      7785     0.0539
+    #>  8 A            A            1887      7814     0.0535
+    #>  9 A            A            1888      9444     0.0529
+    #> 10 A            A            1889      9365     0.0525
+    #> # ℹ 43,569 more rows
 
 #### Visualize
 
@@ -360,11 +460,11 @@ of births by first letter and last letter for the year 2021.
 ``` r
 tbl_names_by_first_and_last_letter |> 
   # Filter for the year 2021
-  
+  filter(year == 2021) |>
   # Initialize a ggplot of last_letter vs. first_letter
-  
+  ggplot(aes(x = last_letter, y = first_letter)) +
   # Add a `geom_tile` layer with fill mapped to pct_births
-  
+  geom_tile(aes(fill = pct_births)) +
   # Add labels (title, subtitle, x, y, fill)
  
   
@@ -382,6 +482,8 @@ tbl_names_by_first_and_last_letter |>
     axis.ticks = element_blank()
   )
 ```
+
+<img src="img/question-4-visualize-1.png" width="100%" style="display: block; margin: auto;" />
 
 ### Question 5: \[Vowels vs Consonants\] Are there naming trends in usage of vowels and consonants?
 
@@ -404,35 +506,30 @@ After that, you will group the data by sex, year, and letter type (vowel
 or consonant) to calculate the percentage of births for each combination
 of first and last letter types.
 
-``` r
-get_letter_type <- function(letter) {
-  VOWELS <- c("A", "E", "I", "O", "U")
-  ifelse(letter %in% VOWELS, 'vowel', 'consonant')
-}
+{r question-5-transform} get_letter_type \<- function(letter) { VOWELS
+\<- c(“A”, “E”, “I”, “O”, “U”) ifelse(letter %in% VOWELS, ‘vowel’,
+‘consonant’) }
 
-tbl_names_vowel_consonant <- tbl_names |> 
-  # Add NEW column named `first_letter_type`
-  
-  # Add NEW column named `last_letter_type`
-  
-  # Group by `sex`, `year`, `first_letter_type` and `last_letter_type`
-  
-  # Summarize the total number of births
-  
-  
-  
-  
-  # Group by `sex` and` `year`
-  
-  # Add NEW column with `pct_births` calculated as `nb_births / sum(nb_births)`
-   
-  # Ungroup the data
-  
-  # Unite `first_letter_type` and `last_letter_type` into a NEW column named `first_last`
- 
+tbl_names_vowel_consonant \<- tbl_names \|\> \# Add NEW column named
+`first_letter_type`
+
+\# Add NEW column named `last_letter_type`
+
+\# Group by `sex`, `year`, `first_letter_type` and `last_letter_type`
+
+\# Summarize the total number of births
+
+\# Group by `sex` and``year\`
+
+\# Add NEW column with `pct_births` calculated as
+`nb_births / sum(nb_births)`
+
+\# Ungroup the data
+
+\# Unite `first_letter_type` and `last_letter_type` into a NEW column
+named `first_last`
 
 tbl_names_vowel_consonant
-```
 
 #### Visualize
 
@@ -441,41 +538,22 @@ of vowels and consonants in names over time. The visualization will show
 the percentage of births by the combination of first and last letter
 types, separately for each sex.
 
-``` r
-tbl_names_vowel_consonant |> 
-  # Reorder `first_last` by the median `pct_births`
-  mutate(first_last = fct_reorder(first_last, pct_births, median)) |>
-  # Initialize a ggplot of `pct_births` vs. `year`
-  
-  # Add an area layer with fill = first_last
-  
-  # Facet wrap plot by `sex`
-  
-  # Add labels (title, subtitle, caption, x, y)
-  
-  
-  
-  
+{r question-5-visualize} tbl_names_vowel_consonant \|\> \# Reorder
+`first_last` by the median `pct_births` mutate(first_last =
+fct_reorder(first_last, pct_births, median)) \|\> \# Initialize a ggplot
+of `pct_births` vs. `year`
 
+\# Add an area layer with fill = first_last
 
+\# Facet wrap plot by `sex`
 
+\# Add labels (title, subtitle, caption, x, y)
 
-  # Clean up x and y axis scales
-  scale_x_continuous(
-    expand = c(0, 0)
-  ) +
-  scale_y_continuous(
-    expand = c(0, 0),
-    labels = scales::percent_format()
-  ) +
-  # Use Viridis colors for fill
-  scale_fill_viridis_d() +
-  # Update plotting theme
-  theme(
-    plot.title.position = 'plot',
-    legend.position = 'bottom'
-  )
-```
+\# Clean up x and y axis scales scale_x\_continuous( expand = c(0, 0)
+) + scale_y\_continuous( expand = c(0, 0), labels =
+scales::percent_format() ) + \# Use Viridis colors for fill
+scale_fill_viridis_d() + \# Update plotting theme theme(
+plot.title.position = ‘plot’, legend.position = ‘bottom’ )
 
 ------------------------------------------------------------------------
 

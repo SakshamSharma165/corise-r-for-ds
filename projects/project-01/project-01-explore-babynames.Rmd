@@ -371,7 +371,7 @@ Do certain combinations of vowels and consonants tend to appear more often in na
 
 In this step, you will create a function to identify whether a letter is a vowel or a consonant. Then, you will use this function to categorize the first and last letters in names as either vowels or consonants. After that, you will group the data by sex, year, and letter type (vowel or consonant) to calculate the percentage of births for each combination of first and last letter types.
 
-```{r question-5-transform}
+{r question-5-transform}
 get_letter_type <- function(letter) {
   VOWELS <- c("A", "E", "I", "O", "U")
   ifelse(letter %in% VOWELS, 'vowel', 'consonant')
@@ -399,13 +399,13 @@ tbl_names_vowel_consonant <- tbl_names |>
  
 
 tbl_names_vowel_consonant
-```
+
 
 #### Visualize
 
 Now, you will create a visualization to display the trends in the usage of vowels and consonants in names over time. The visualization will show the percentage of births by the combination of first and last letter types, separately for each sex.
 
-```{r question-5-visualize}
+{r question-5-visualize}
 tbl_names_vowel_consonant |> 
   # Reorder `first_last` by the median `pct_births`
   mutate(first_last = fct_reorder(first_last, pct_births, median)) |>
@@ -439,7 +439,7 @@ tbl_names_vowel_consonant |>
     plot.title.position = 'plot',
     legend.position = 'bottom'
   )
-```
+
 
 
 ----
