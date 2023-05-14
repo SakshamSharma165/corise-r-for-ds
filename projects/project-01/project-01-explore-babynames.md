@@ -403,7 +403,7 @@ plot_trends_in_letter("S")
 
 <img src="img/question-3-visualize-2-1.png" width="100%" style="display: block; margin: auto;" />
 
-|                                                                                                                                                                                                                                                                                         |
+|                                                                                                                                                      TEST                                                                                                                                   |
 |-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | \[BONUS\]                                                                                                                                                                                                                                                                               |
 | How do these plots change when you focus on the `last_letter` instead of the `first_letter`. Feel free to go back and change `first_letter` to `last_letter` and see what you find. Try to make an educated guess before you run the code, so you can see if your intuition matches up! |
