@@ -143,7 +143,7 @@ tbl_lifetables |>
   geom_step() +
   # Add labels (title, subtitle, x, y, caption)
   labs(
-    title = "Probability of Life Expectancy",
+    title = "Probability of Being Alive",
     subtitle = "In Year 2022",
     x = "Year",
     y = "Probabilty",
@@ -203,13 +203,13 @@ tbl_lifetables_extended_2022 |>
     linetype = 'dashed'
   ) +
   # Add labels (title, subtitle, x, y, caption)
-
-  
-  
-  
-  
-  
-  
+  labs(
+    title = "Probability of Being Alive",
+    subtitle = "In Year 2022",
+    x = "Year",
+    y = "Probabilty",
+    caption = "Source: SSA"
+  ) +
   # Update theme to move plot title
   theme(plot.title.position = 'plot')
 ```
@@ -290,9 +290,9 @@ plot_estimated_age <- function(tbl, my_name, my_sex) {
     # Add labels (title, subtitle, x, y)
     labs(
       title = glue::glue('Age Distribution of American Girls Named {my_name}'),
-      subtitle = "___",
-      x = "___",
-      y = "___"
+      subtitle = "2022",
+      x = "Year",
+      y = glue::glue('{my_name}s born')
     ) +
     # Add an annotation for number of people estimated to be alive
     annotate(
@@ -332,11 +332,15 @@ tbl_names_female_top_25 <- tbl_names |>
   # Summarize total number of births
   summarise(nb.births = sum(nb_births), .groups = "drop") |>
   # Remove column nb_births
+  
   #arrange(-nb_births) |>
   # Filter only Females
   filter(sex == "F") |>
+  arrange(desc(nb.births)) |>
+  slice_max(order_by = nb.births, n = 25) |>
+  
   # Slice top 25 rows
-  head(25) |>
+  #slice_max(sum(nb_births), n = 25) |>
   # Select name and sex
   select(name, sex) 
 
@@ -384,10 +388,10 @@ tbl_names_extended_age |>
   geom_point(size = 2, color = "darkred") +
   # Add labels (title, subtitle, x, y)
   labs(
-    title = "___",
-    subtitle = "___",
-    x = "___",
-    y = "___"
+    title = "Top 25 Female Names",
+    subtitle = "",
+    x = "Median Age",
+    y = "Name"
   ) +
   # Update theme to clean up visual appearance of the plot
   theme(
