@@ -7,7 +7,7 @@ output: github_document
 library(tidyverse)
 knitr::opts_chunk$set(
   echo = TRUE,
-  eval = FALSE,
+  eval = TRUE,
   collapse = TRUE,
   comment = "#>",
   fig.path = "img/",
@@ -332,8 +332,6 @@ tbl_names_female_top_25 <- tbl_names |>
   # Summarize total number of births
   summarise(nb.births = sum(nb_births), .groups = "drop") |>
   # Remove column nb_births
-  
-  #arrange(-nb_births) |>
   # Filter only Females
   filter(sex == "F") |>
   arrange(desc(nb.births)) |>
